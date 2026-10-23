@@ -1,0 +1,74 @@
+# 所有相对路径均相对于 github/codes，而不是启动命令所在目录。
+project:
+  output_dir: outputs
+  experiment: sfa_litenet
+  device: auto
+  num_workers: 0
+  deterministic: true
+data:
+  root: ../dataset
+  images_dir: images
+  masks_dir: masks
+  image_extensions: [".jpg", ".jpeg", ".png"]
+  mask_extension: .png
+  image_size: [512, 512]
+  mask_threshold: 128
+  # 部分现有 PNG 存在中间灰度；默认阈值二值化，可开启严格模式拒收。
+  strict_binary_masks: false
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  split_manifest: outputs/splits/split.json
+  # 可选 CSV：item_id,source_id,section_id。只要指定，就要求完整覆盖所有样本。
+  metadata_csv: null
+  split_seed: 2026
+  split_ratios: [0.70, 0.15, 0.15]
+  # 缺少来源信息时，将连续五个编号先并为一组，再合并重复/近重复组。
+  fallback_group_size: 5
+  near_duplicate_hamming: 6
+augmentation:
+  horizontal_flip: 0.5
+  vertical_flip: 0.5
+  scale_range: [0.5, 2.0]
+  photometric_probability: 0.5
+  brightness: 0.20
+  contrast: 0.20
+  saturation: 0.20
+model:
+  encoder_channels: [32, 64, 128, 256]
+  bottleneck_channels: 512
+  blocks_per_stage: 1
+  eca_kernel: 5
+  frequency_reduction: 16
+  coordinate_reduction: 32
+  coordinate_min_channels: 8
+  boundary_channels: 16
+loss:
+  focal_weight: 1.0
+  dice_weight: 1.0
+  boundary_weight: 0.01
+  cldice_weight: 1.0
+  focal_alpha: 0.25
+  focal_gamma: 2.0
+  smooth: 0.000001
+  skeleton_iterations: 10
+training:
+  seeds: [42, 43, 44, 45, 46]
+  batch_size: 8
+  epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  warmup_epochs: 5
+  warmup_start_factor: 0.1
+  minimum_lr: 0.0
+  patience: 15
+  min_delta: 0.0
+  gradient_clip_norm: 0.0
+evaluation:
+  batch_size: 8
+  threshold: 0.5
+  boundary_tolerance: 2.0
+  save_predictions: true
+benchmark:
+  warmup: 50
+  iterations: 200
+  repeats: 5
